@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assistente de Voz</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <div class="brilho brilho-um"></div>
+  <div class="brilho brilho-dois"></div>
+
+  <main class="painel">
+    <header>
+      <div class="marca"><span class="marca-icone">✦</span> ORBIT</div>
+      <span class="conectado"><i></i> Assistente online</span>
+    </header>
+
+    <section class="boas-vindas">
+      <p class="etiqueta">SEU ASSISTENTE INTELIGENTE</p>
+      <h1>Como posso <em>ajudar?</em></h1>
+      <p class="descricao">Toque no microfone, faça uma pergunta e receba uma resposta em voz alta.</p>
+      <label class="seletor-voz" for="vozSelecionada">
+        <span>Voz da resposta</span>
+        <select id="vozSelecionada" aria-label="Escolha a voz da resposta">
+          <option>Carregando vozes…</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="gravacao" aria-label="Controle de gravação">
+      <div class="ondas" aria-hidden="true"><span></span><span></span><span></span></div>
+      <button id="botaoGravar" class="botao-gravar" type="button" aria-label="Iniciar gravação">
+        <span class="microfone" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none">
+            <rect x="8.2" y="2.4" width="7.6" height="12.1" rx="3.8" stroke="currentColor" stroke-width="1.8" />
+            <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5M8.7 21.5h6.6" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" />
+          </svg></span>
+        <span id="textoBotao">Falar agora</span>
+      </button>
+      <p id="status" class="status" aria-live="polite"><span class="status-ponto"></span> Pronto para ouvir</p>
+    </section>
+
+    <section id="resultado" class="resultado" hidden aria-live="polite">
+      <div class="cartao pergunta-cartao">
+        <span class="cartao-rotulo">VOCÊ PERGUNTOU</span>
+        <p id="pergunta"></p>
+      </div>
+      <div class="cartao resposta-cartao">
+        <div class="resposta-topo"><span class="cartao-rotulo">ORBIT RESPONDEU</span><span class="mini-ondas"
+            aria-hidden="true"><b></b><b></b><b></b><b></b></span></div>
+        <p id="resposta"></p>
+        <audio id="audioResposta" controls></audio>
+      </div>
+    </section>
+    <p class="rodape">Powered by n8n & OpenAI · © 2026 Steven Cardoso </p>
+  </main>
+  <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,226 @@
+{
+  "name": "AssistenteDeVoz",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "assistente-voz",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ca956f25-a512-42e5-a7ae-2d1cead71e3d",
+      "name": "Webhook",
+      "webhookId": "f377b4b4-cb70-4d19-837c-137b2bfc07d0"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Você é um assistente de voz para uma demonstração de curso. Responda à pergunta em português do Brasil, com clareza e em no máximo três frases. Não invente fatos; quando não souber, diga isso brevemente.\n\nPergunta transcrita: {{ $json.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "1e4e9a02-4829-4139-84a5-7464d33db609",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        448,
+        224
+      ],
+      "id": "843f1186-aab0-4161-819f-1001812720c5",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "s49wxdNZmHSu5Nt6",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q={{ encodeURIComponent($json.output) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        816,
+        0
+      ],
+      "id": "bebf4c6f-2c0e-4ffe-ab9c-5ec7ced0a175",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const audioBuffer = await this.helpers.getBinaryDataBuffer(0, \"data\");\n\nconst audioBase64 = `data:audio/mpeg;base64,${audioBuffer.toString(\"base64\")}`;\n\nconst textoPergunta =\n  $node[\"HTTP Request1\"].json.text || \"Áudio enviado\";\n\nconst textoResposta =\n  $node[\"AI Agent\"].json.output ||\n  $node[\"AI Agent\"].json.text ||\n  \"Sem resposta\";\n\nreturn [\n  {\n    json: {\n      pergunta: textoPergunta,\n      resposta: textoResposta,\n      audioBase64,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "0fc616a0-1171-4f80-8032-1a199b59a7a0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"pergunta\": \"{{ $json.pergunta }}\",\n  \"resposta\": \"{{ $json.resposta }}\",\n  \"audioBase64\": \"{{ $json.audioBase64 }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "711e997d-e7a3-4a61-aee3-ba33cbd77ef9",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer COLE_SUA_CHAVE_GROQ_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "8ada5d4f-77fe-4de1-910b-ca8b00b0e5e7",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "af464d28-f3ff-4ea8-bb43-f841fbd96bd4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "951011e41f2abe50e8d12c79fa8e2c83d18e9ff82e0560de3a195af5912c69e2"
+  },
+  "nodeGroups": [],
+  "id": "xhi56UeAloLcsPcP",
+  "tags": []
+}
